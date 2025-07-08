@@ -30,25 +30,11 @@ chrome.storage.sync.get({ defaultOpenDepth: 2 }, (items) => {
         return inertiaPage = nextPage;
     }
 
-    const renderJson = (jsonString, isPartial = false) => {
-        const page = mergePage(JSON.parse(jsonString), isPartial);
-        const value = JSON.stringify(page, null, '\t')
+    const renderJson = (page, isPartial = false) => {
+        const newPage = mergePage(page, isPartial);
+        const value = JSON.stringify(newPage, null, '\t')
         editor.setValue(value)
         editor.getSession().foldToLevel(defaultOpenDepth);
-    }
-
-    const renderJsonFromHtml = (html) => {
-        if (!html?.length) {
-            return
-        }
-        const parser = new DOMParser();
-        const document = parser.parseFromString(html, "text/html");
-        const element = document.querySelector('[data-page]')
-        if (element && element.dataset.page) {
-            renderJson(element.dataset.page)
-        } else {
-            editor.setValue(`/* This page doesn’t seem to be using Inertia.js */`)
-        }
     }
 
     const sendJson = () => {
@@ -63,28 +49,31 @@ chrome.storage.sync.get({ defaultOpenDepth: 2 }, (items) => {
 
     document.querySelector('#send').addEventListener('click', sendJson)
 
-    // on panel open get current document
-    chrome.devtools.inspectedWindow.getResources(
-        (resources) => {
-            const document = resources.find((resource) => resource.type === 'document')
-            document.getContent(renderJsonFromHtml)
+    const port = chrome.runtime.connect({ name: `panel-${chrome.devtools.inspectedWindow.tabId}` });
+
+    port.onMessage.addListener((message) => {
+        if (message.type === 'INERTIA_SUCCESS') {
+            renderJson(message.page);
         }
-    )
+    });
+
+    // on panel open get current page data
+    chrome.tabs.sendMessage(chrome.devtools.inspectedWindow.tabId, { type: 'GET_INERTIA_PAGE' }, (page) => {
+        if (page) {
+            renderJson(page);
+        } else {
+            editor.setValue(`/* This page doesn’t seem to be using Inertia.js */`)
+        }
+    });
 
     // listen for changes
     chrome.devtools.network.onRequestFinished.addListener(
         (request) => {
-            if (request._resourceType === 'document') {
-                if (request.response.content.mimeType.includes('text/html')) {
-                    request.getContent(renderJsonFromHtml)
-                }
-                return
-            }
             if (request.response.headers.find((header) => header.name.toLowerCase() === 'x-inertia')) {
                 const isPartial = request.request.headers.some(
                     (header) => header.name.toLowerCase() === 'x-inertia-partial-data'
                 );
-                request.getContent((content) => renderJson(content, isPartial));
+                request.getContent((content) => renderJson(JSON.parse(content), isPartial));
                 return
             }
         }
