@@ -5,8 +5,20 @@
     <link rel="stylesheet" href="panel.css">
 </head>
 <body>
-<button id="send">Send</button>
-<div id="json">/* Refresh your page to see Inertia.js page json */</div>
+<div class="tabs">
+    <button class="tab-button active" data-tab="props">Props</button>
+    <button class="tab-button" data-tab="routes" style="display: none;">Routes</button>
+</div>
+<div id="props" class="tab-content active">
+    <button id="send">Send</button>
+    <div id="json">/* Refresh your page to see Inertia.js page json */</div>
+</div>
+<div id="routes" class="tab-content">
+    <div class="toolbar">
+        <input type="search" id="route-search" placeholder="Search routes by name or URI...">
+    </div>
+    <div id="route-list"></div>
+</div>
 <script src="panel.js"></script>
 </body>
 </html>
