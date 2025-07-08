@@ -12,12 +12,12 @@
         "watch": "npm-run-all --parallel watch:scripts watch:styles"
     },
     "dependencies": {
-        "ace-builds": "^1.15.0"
+        "ace-builds": "^1.43.1"
     },
     "devDependencies": {
-        "esbuild": "^0.14.25",
+        "esbuild": "^0.25.5",
         "npm-run-all": "^4.1.5",
-        "prettier": "^2.8.4",
-        "sass": "^1.49.9"
+        "prettier": "^3.6.2",
+        "sass": "^1.89.2"
     }
 }
