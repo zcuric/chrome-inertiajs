@@ -1,90 +1,439 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Inertia.js options</title>
+    <title>Inertia.js DevTools Settings</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        :root {
+            --primary-color: #667eea;
+            --primary-hover: #5a6fd8;
+            --background: #f8fafc;
+            --card-background: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --success-color: #48bb78;
+            --border-radius: 8px;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-            padding: 10px;
-            background-color: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
         }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .settings-section {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            margin: 0 0 20px 0;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.9rem;
         }
-        input, select {
+
+        .label-description {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        input[type="number"],
+        select {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--card-background);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
         }
-        #feedback {
-            line-height: 1em;
-            height: 1em;
-            margin: 1em 0;
-            color: green;
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 0;
+        }
+
+        .checkbox-wrapper {
+            position: relative;
+        }
+
+        input[type="checkbox"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--card-background);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
             font-weight: bold;
+        }
+
+        .checkbox-label {
+            cursor: pointer;
+            margin: 0;
+            user-select: none;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--card-background);
+        }
+
+        .radio-option:hover {
+            border-color: var(--primary-color);
+        }
+
+        .radio-option.selected {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        input[type="radio"] {
+            margin: 0;
+        }
+
+        .feedback {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 6px;
+            box-shadow: var(--shadow-lg);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .feedback.show {
+            transform: translateX(0);
+        }
+
+        .theme-preview {
+            margin-top: 12px;
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .preview-dark {
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        .preview-light {
+            background: #ffffff;
+            color: #333333;
+            border-color: #e1e1e1;
+        }
+
+        @media (max-width: 640px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 16px;
+            }
+
+            .radio-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>Inertia.js DevTools Settings</h1>
+            <p>Customize your JSON viewer experience</p>
+        </div>
 
-<div class="form-group">
-    <label for="depth">JSON open at depth:</label>
-    <input type="number" id="depth" name="depth">
-</div>
+        <div class="settings-grid">
+            <!-- Appearance Section -->
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <svg class="section-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 2h6v4H7V4zm8 6V9a1 1 0 00-1-1h-2a1 1 0 00-1 1v1h4z"/>
+                    </svg>
+                    Appearance
+                </h2>
 
-<div class="form-group">
-    <label for="theme">Editor Theme:</label>
-    <select id="theme" name="theme">
-        <optgroup label="Dark Themes">
-            <option value="ambiance">Ambiance</option>
-            <option value="chaos">Chaos</option>
-            <option value="clouds_midnight">Clouds Midnight</option>
-            <option value="dracula">Dracula</option>
-            <option value="gob">Gob</option>
-            <option value="gruvbox">Gruvbox</option>
-            <option value="idle_fingers">Idle Fingers</option>
-            <option value="kr_theme">krTheme</option>
-            <option value="merbivore">Merbivore</option>
-            <option value="merbivore_soft">Merbivore Soft</option>
-            <option value="mono_industrial">Mono Industrial</option>
-            <option value="monokai">Monokai</option>
-            <option value="nord_dark">Nord Dark</option>
-            <option value="pastel_on_dark">Pastel on Dark</option>
-            <option value="solarized_dark">Solarized Dark</option>
-            <option value="terminal">Terminal</option>
-            <option value="tomorrow_night">Tomorrow Night</option>
-            <option value="tomorrow_night_blue">Tomorrow Night Blue</option>
-            <option value="tomorrow_night_bright">Tomorrow Night Bright</option>
-            <option value="tomorrow_night_eighties">Tomorrow Night Eighties</option>
-            <option value="twilight">Twilight</option>
-            <option value="vibrant_ink">Vibrant Ink</option>
-        </optgroup>
-        <optgroup label="Light Themes">
-            <option value="chrome">Chrome</option>
-            <option value="clouds">Clouds</option>
-            <option value="crimson_editor">Crimson Editor</option>
-            <option value="dawn">Dawn</option>
-            <option value="dreamweaver">Dreamweaver</option>
-            <option value="eclipse">Eclipse</option>
-            <option value="github">GitHub</option>
-            <option value="iplastic">IPlastic</option>
-            <option value="solarized_light">Solarized Light</option>
-            <option value="sqlserver">SQL Server</option>
-            <option value="textmate">TextMate</option>
-            <option value="tomorrow">Tomorrow</option>
-            <option value="xcode">XCode</option>
-        </optgroup>
-    </select>
-</div>
+                <div class="form-group">
+                    <label for="theme">
+                        Theme
+                        <div class="label-description">Choose your preferred color scheme</div>
+                    </label>
+                    <select id="theme" name="theme">
+                        <optgroup label="Dark Themes">
+                            <option value="dracula">Dracula</option>
+                            <option value="monokai">Monokai</option>
+                            <option value="gruvbox">Gruvbox Dark</option>
+                            <option value="nord_dark">Nord Dark</option>
+                            <option value="solarized_dark">Solarized Dark</option>
+                            <option value="tomorrow_night">Tomorrow Night</option>
+                            <option value="tomorrow_night_blue">Tomorrow Night Blue</option>
+                            <option value="tomorrow_night_bright">Tomorrow Night Bright</option>
+                            <option value="tomorrow_night_eighties">Tomorrow Night 80s</option>
+                            <option value="ambiance">Ambiance</option>
+                            <option value="chaos">Chaos</option>
+                            <option value="clouds_midnight">Clouds Midnight</option>
+                            <option value="gob">Gob</option>
+                            <option value="idle_fingers">Idle Fingers</option>
+                            <option value="kr_theme">Kr Theme</option>
+                            <option value="merbivore">Merbivore</option>
+                            <option value="merbivore_soft">Merbivore Soft</option>
+                            <option value="mono_industrial">Mono Industrial</option>
+                            <option value="pastel_on_dark">Pastel on Dark</option>
+                            <option value="terminal">Terminal</option>
+                            <option value="twilight">Twilight</option>
+                            <option value="vibrant_ink">Vibrant Ink</option>
+                        </optgroup>
+                        <optgroup label="Light Themes">
+                            <option value="github">GitHub Light</option>
+                            <option value="solarized_light">Solarized Light</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="xcode">Xcode</option>
+                            <option value="chrome">Chrome</option>
+                            <option value="clouds">Clouds</option>
+                            <option value="crimson_editor">Crimson Editor</option>
+                            <option value="dawn">Dawn</option>
+                            <option value="dreamweaver">Dreamweaver</option>
+                            <option value="eclipse">Eclipse</option>
+                            <option value="iplastic">IPlastic</option>
+                            <option value="sqlserver">SQL Server</option>
+                            <option value="textmate">TextMate</option>
+                        </optgroup>
+                    </select>
+                    <div id="theme-preview" class="theme-preview"></div>
+                </div>
 
-<div id="feedback"></div>
+                <div class="form-group">
+                    <label for="fontSize">
+                        Font Size (px)
+                        <div class="label-description">Adjust the JSON text size</div>
+                    </label>
+                    <input type="number" id="fontSize" name="fontSize" min="10" max="24" step="1">
+                </div>
+            </div>
 
-<script src="options.js"></script>
+            <!-- Display Options -->
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <svg class="section-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+                    </svg>
+                    Display Options
+                </h2>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showDataTypes" name="showDataTypes">
+                        <label for="showDataTypes" class="checkbox-label">
+                            Show Data Types
+                            <div class="label-description">Display type annotations (string, number, etc.)</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showToolbar" name="showToolbar">
+                        <label for="showToolbar" class="checkbox-label">
+                            Show Toolbar
+                            <div class="label-description">Display expand/collapse and search controls</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showCopy" name="showCopy">
+                        <label for="showCopy" class="checkbox-label">
+                            Show Copy Button
+                            <div class="label-description">Enable copy to clipboard functionality</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showSize" name="showSize">
+                        <label for="showSize" class="checkbox-label">
+                            Show Size Info
+                            <div class="label-description">Display JSON character count</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Structure Settings -->
+            <div class="settings-section">
+                <h2 class="section-title">
+                    <svg class="section-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+                    </svg>
+                    Structure
+                </h2>
+
+                <div class="form-group">
+                    <label for="defaultOpenDepth">
+                        Default Open Depth
+                        <div class="label-description">How many levels to expand by default</div>
+                    </label>
+                    <input type="number" id="defaultOpenDepth" name="defaultOpenDepth" min="0" max="10" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="indent">
+                        Indentation (spaces)
+                        <div class="label-description">Number of spaces for each indentation level</div>
+                    </label>
+                    <input type="number" id="indent" name="indent" min="1" max="8" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Expand Icon Style
+                        <div class="label-description">Choose your preferred expand/collapse icons</div>
+                    </label>
+                    <div class="radio-group">
+                        <div class="radio-option" data-value="square">
+                            <input type="radio" id="square" name="expandIconType" value="square">
+                            <label for="square">Square</label>
+                        </div>
+                        <div class="radio-option" data-value="circle">
+                            <input type="radio" id="circle" name="expandIconType" value="circle">
+                            <label for="circle">Circle</label>
+                        </div>
+                        <div class="radio-option" data-value="arrow">
+                            <input type="radio" id="arrow" name="expandIconType" value="arrow">
+                            <label for="arrow">Arrow</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+
+    <script src="options.js"></script>
 </body>
 </html>

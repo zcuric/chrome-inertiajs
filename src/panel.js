@@ -4,7 +4,22 @@ import '@andypf/json-viewer'
 function initializePanel() {
     let inertiaPage = {};
     let jsonViewer = null;
-    let userSettings = { defaultOpenDepth: 2, theme: 'dracula' };
+    let userSettings = {
+        // Appearance
+        theme: 'dracula',
+        fontSize: 16,
+
+        // Display Options
+        showDataTypes: false,
+        showToolbar: true,
+        showCopy: true,
+        showSize: true,
+
+        // Structure
+        defaultOpenDepth: 2,
+        indent: 2,
+        expandIconType: 'square'
+    };
 
         // Theme mapping from extension themes to json-viewer themes
     const themeMapping = {
@@ -48,7 +63,7 @@ function initializePanel() {
         'xcode': 'xcode'
     };
 
-        // Initialize json-viewer
+            // Initialize json-viewer
     const initializeJsonViewer = () => {
         const container = document.querySelector('#json-viewer-container');
         if (!container) return;
@@ -62,12 +77,15 @@ function initializePanel() {
         jsonViewer = document.createElement('andypf-json-viewer');
         jsonViewer.setAttribute('theme', viewerTheme);
         jsonViewer.setAttribute('expanded', userSettings.defaultOpenDepth.toString());
-        jsonViewer.setAttribute('show-toolbar', 'true');
-        jsonViewer.setAttribute('show-data-types', 'true');
-        jsonViewer.setAttribute('show-copy', 'true');
-        jsonViewer.setAttribute('show-size', 'true');
-        jsonViewer.setAttribute('expand-icon-type', 'square');
-        jsonViewer.setAttribute('indent', '2');
+        jsonViewer.setAttribute('show-toolbar', userSettings.showToolbar.toString());
+        jsonViewer.setAttribute('show-data-types', userSettings.showDataTypes.toString());
+        jsonViewer.setAttribute('show-copy', userSettings.showCopy.toString());
+        jsonViewer.setAttribute('show-size', userSettings.showSize.toString());
+        jsonViewer.setAttribute('expand-icon-type', userSettings.expandIconType);
+        jsonViewer.setAttribute('indent', userSettings.indent.toString());
+
+        // Apply font size styling
+        jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
 
         // Set initial data
         jsonViewer.data = { message: 'Refresh your page to see Inertia.js page json' };
@@ -75,8 +93,8 @@ function initializePanel() {
         container.appendChild(jsonViewer);
     };
 
-    // --- Load Settings and Apply Theme ---
-    chrome.storage.sync.get({ defaultOpenDepth: 2, theme: 'dracula' }, (items) => {
+        // --- Load Settings and Apply Theme ---
+    chrome.storage.sync.get(userSettings, (items) => {
         userSettings = items;
 
         const darkThemes = [
@@ -109,13 +127,15 @@ function initializePanel() {
         return inertiaPage = nextPage;
     }
 
-        let renderJson = (page, isPartial = false) => {
+            let renderJson = (page, isPartial = false) => {
         const newPage = mergePage(page, isPartial);
         if (typeof newPage !== 'object' || newPage === null) return;
 
         if (jsonViewer) {
             jsonViewer.data = newPage;
             jsonViewer.setAttribute('expanded', userSettings.defaultOpenDepth.toString());
+            // Ensure font size is maintained
+            jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
         }
 
         handleZiggy(newPage);

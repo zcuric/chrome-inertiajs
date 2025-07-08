@@ -316,7 +316,20 @@
   function initializePanel() {
     let inertiaPage = {};
     let jsonViewer = null;
-    let userSettings = { defaultOpenDepth: 2, theme: "dracula" };
+    let userSettings = {
+      // Appearance
+      theme: "dracula",
+      fontSize: 16,
+      // Display Options
+      showDataTypes: false,
+      showToolbar: true,
+      showCopy: true,
+      showSize: true,
+      // Structure
+      defaultOpenDepth: 2,
+      indent: 2,
+      expandIconType: "square"
+    };
     const themeMapping = {
       // Dark themes
       "dracula": "dracula",
@@ -364,16 +377,17 @@
       jsonViewer = document.createElement("andypf-json-viewer");
       jsonViewer.setAttribute("theme", viewerTheme);
       jsonViewer.setAttribute("expanded", userSettings.defaultOpenDepth.toString());
-      jsonViewer.setAttribute("show-toolbar", "true");
-      jsonViewer.setAttribute("show-data-types", "true");
-      jsonViewer.setAttribute("show-copy", "true");
-      jsonViewer.setAttribute("show-size", "true");
-      jsonViewer.setAttribute("expand-icon-type", "square");
-      jsonViewer.setAttribute("indent", "2");
+      jsonViewer.setAttribute("show-toolbar", userSettings.showToolbar.toString());
+      jsonViewer.setAttribute("show-data-types", userSettings.showDataTypes.toString());
+      jsonViewer.setAttribute("show-copy", userSettings.showCopy.toString());
+      jsonViewer.setAttribute("show-size", userSettings.showSize.toString());
+      jsonViewer.setAttribute("expand-icon-type", userSettings.expandIconType);
+      jsonViewer.setAttribute("indent", userSettings.indent.toString());
+      jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
       jsonViewer.data = { message: "Refresh your page to see Inertia.js page json" };
       container.appendChild(jsonViewer);
     };
-    chrome.storage.sync.get({ defaultOpenDepth: 2, theme: "dracula" }, (items) => {
+    chrome.storage.sync.get(userSettings, (items) => {
       userSettings = items;
       const darkThemes = [
         "ambiance",
@@ -423,6 +437,7 @@
       if (jsonViewer) {
         jsonViewer.data = newPage;
         jsonViewer.setAttribute("expanded", userSettings.defaultOpenDepth.toString());
+        jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
       }
       handleZiggy(newPage);
     };

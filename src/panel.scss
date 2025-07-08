@@ -178,9 +178,12 @@ html, body {
     // Let json-viewer handle its own styling
     // Override any conflicting styles if needed
 
-    .json-viewer {
+    andypf-json-viewer {
         font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
-        font-size: 13px;
+        // Font size will be set dynamically via JavaScript
+        width: 100%;
+        height: 100%;
+        display: block;
     }
 }
 
