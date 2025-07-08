@@ -558,6 +558,61 @@
       const filteredRoutes = allRoutes.filter((r) => r.name.toLowerCase().includes(searchTerm) || r.uri.toLowerCase().includes(searchTerm));
       renderRoutes(filteredRoutes);
     });
+    const settingsModal = document.getElementById("settings-modal");
+    const settingsBtn = document.getElementById("settings-btn");
+    const settingsClose = document.getElementById("settings-close");
+    function openSettingsModal() {
+      document.getElementById("modal-theme").value = userSettings.theme;
+      document.getElementById("modal-fontSize").value = userSettings.fontSize;
+      document.getElementById("modal-showDataTypes").checked = userSettings.showDataTypes;
+      document.getElementById("modal-showToolbar").checked = userSettings.showToolbar;
+      document.getElementById("modal-showCopy").checked = userSettings.showCopy;
+      document.getElementById("modal-showSize").checked = userSettings.showSize;
+      document.getElementById("modal-defaultOpenDepth").value = userSettings.defaultOpenDepth;
+      document.getElementById("modal-indent").value = userSettings.indent;
+      const expandIconRadio = document.querySelector(`input[name="expandIconType"][value="${userSettings.expandIconType}"]`);
+      if (expandIconRadio) {
+        expandIconRadio.checked = true;
+      }
+      settingsModal.classList.add("show");
+    }
+    function closeSettingsModal() {
+      settingsModal.classList.remove("show");
+    }
+    function saveSettings() {
+      const newSettings = {
+        theme: document.getElementById("modal-theme").value,
+        fontSize: parseInt(document.getElementById("modal-fontSize").value),
+        showDataTypes: document.getElementById("modal-showDataTypes").checked,
+        showToolbar: document.getElementById("modal-showToolbar").checked,
+        showCopy: document.getElementById("modal-showCopy").checked,
+        showSize: document.getElementById("modal-showSize").checked,
+        defaultOpenDepth: parseInt(document.getElementById("modal-defaultOpenDepth").value),
+        indent: parseInt(document.getElementById("modal-indent").value),
+        expandIconType: document.querySelector('input[name="expandIconType"]:checked')?.value || "square"
+      };
+      chrome.storage.sync.set(newSettings, () => {
+        console.log("Settings saved");
+      });
+      userSettings = { ...userSettings, ...newSettings };
+      closeSettingsModal();
+    }
+    settingsBtn.addEventListener("click", openSettingsModal);
+    settingsClose.addEventListener("click", closeSettingsModal);
+    settingsModal.addEventListener("click", (e) => {
+      if (e.target === settingsModal) {
+        closeSettingsModal();
+      }
+    });
+    const settingsInputs = settingsModal.querySelectorAll("select, input");
+    settingsInputs.forEach((input) => {
+      input.addEventListener("change", saveSettings);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && settingsModal.classList.contains("show")) {
+        closeSettingsModal();
+      }
+    });
   }
   document.addEventListener("DOMContentLoaded", initializePanel);
 })();

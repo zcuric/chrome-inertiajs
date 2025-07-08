@@ -8,6 +8,11 @@
 <div class="tabs">
     <button class="tab-button active" data-tab="props">Props</button>
     <button class="tab-button" data-tab="routes" style="display: none;">Routes</button>
+    <button id="settings-btn" class="settings-button" title="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+        </svg>
+    </button>
 </div>
 <div id="props" class="tab-content active">
     <button id="send">Send</button>
@@ -19,6 +24,130 @@
     </div>
     <div id="route-list"></div>
 </div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="settings-modal">
+    <div class="settings-modal-content">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button id="settings-close" class="settings-close">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="settings-body">
+            <div class="settings-section">
+                <h3>Appearance</h3>
+
+                <div class="setting-item">
+                    <label for="modal-theme">Theme</label>
+                    <select id="modal-theme" name="theme">
+                        <optgroup label="Dark Themes">
+                            <option value="dracula">Dracula</option>
+                            <option value="monokai">Monokai</option>
+                            <option value="gruvbox">Gruvbox Dark</option>
+                            <option value="nord_dark">Nord Dark</option>
+                            <option value="solarized_dark">Solarized Dark</option>
+                            <option value="tomorrow_night">Tomorrow Night</option>
+                            <option value="ambiance">Ambiance</option>
+                            <option value="chaos">Chaos</option>
+                            <option value="clouds_midnight">Clouds Midnight</option>
+                            <option value="gob">Gob</option>
+                            <option value="idle_fingers">Idle Fingers</option>
+                            <option value="kr_theme">Kr Theme</option>
+                            <option value="merbivore">Merbivore</option>
+                            <option value="merbivore_soft">Merbivore Soft</option>
+                            <option value="mono_industrial">Mono Industrial</option>
+                            <option value="pastel_on_dark">Pastel on Dark</option>
+                            <option value="terminal">Terminal</option>
+                            <option value="twilight">Twilight</option>
+                            <option value="vibrant_ink">Vibrant Ink</option>
+                        </optgroup>
+                        <optgroup label="Light Themes">
+                            <option value="github">GitHub</option>
+                            <option value="solarized_light">Solarized Light</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="xcode">Xcode</option>
+                            <option value="chrome">Chrome</option>
+                            <option value="clouds">Clouds</option>
+                            <option value="crimson_editor">Crimson Editor</option>
+                            <option value="dawn">Dawn</option>
+                            <option value="dreamweaver">Dreamweaver</option>
+                            <option value="eclipse">Eclipse</option>
+                            <option value="iplastic">IPlastic</option>
+                            <option value="sqlserver">SQL Server</option>
+                            <option value="textmate">TextMate</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label for="modal-fontSize">Font Size (px)</label>
+                    <input type="number" id="modal-fontSize" name="fontSize" min="10" max="24" step="1">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Display Options</h3>
+
+                <div class="setting-item checkbox-item">
+                    <input type="checkbox" id="modal-showDataTypes" name="showDataTypes">
+                    <label for="modal-showDataTypes">Show Data Types</label>
+                </div>
+
+                <div class="setting-item checkbox-item">
+                    <input type="checkbox" id="modal-showToolbar" name="showToolbar">
+                    <label for="modal-showToolbar">Show Toolbar</label>
+                </div>
+
+                <div class="setting-item checkbox-item">
+                    <input type="checkbox" id="modal-showCopy" name="showCopy">
+                    <label for="modal-showCopy">Show Copy Button</label>
+                </div>
+
+                <div class="setting-item checkbox-item">
+                    <input type="checkbox" id="modal-showSize" name="showSize">
+                    <label for="modal-showSize">Show Size Info</label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Structure</h3>
+
+                <div class="setting-item">
+                    <label for="modal-defaultOpenDepth">Default Open Depth</label>
+                    <input type="number" id="modal-defaultOpenDepth" name="defaultOpenDepth" min="0" max="10" step="1">
+                </div>
+
+                <div class="setting-item">
+                    <label for="modal-indent">Indentation (spaces)</label>
+                    <input type="number" id="modal-indent" name="indent" min="1" max="8" step="1">
+                </div>
+
+                <div class="setting-item">
+                    <label>Expand Icon Style</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="modal-square" name="expandIconType" value="square">
+                            <label for="modal-square">Square</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="modal-circle" name="expandIconType" value="circle">
+                            <label for="modal-circle">Circle</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="modal-arrow" name="expandIconType" value="arrow">
+                            <label for="modal-arrow">Arrow</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="panel.js"></script>
 </body>
 </html>
