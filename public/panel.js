@@ -579,6 +579,20 @@
     function closeSettingsModal() {
       settingsModal.classList.remove("show");
     }
+    function showSettingsSavedFeedback() {
+      let feedback = document.getElementById("settings-feedback");
+      if (!feedback) {
+        feedback = document.createElement("div");
+        feedback.id = "settings-feedback";
+        feedback.className = "settings-feedback";
+        feedback.textContent = "Settings saved!";
+        document.body.appendChild(feedback);
+      }
+      feedback.classList.add("show");
+      setTimeout(() => {
+        feedback.classList.remove("show");
+      }, 2e3);
+    }
     function saveSettings() {
       const newSettings = {
         theme: document.getElementById("modal-theme").value,
@@ -593,9 +607,8 @@
       };
       chrome.storage.sync.set(newSettings, () => {
         console.log("Settings saved");
+        showSettingsSavedFeedback();
       });
-      userSettings = { ...userSettings, ...newSettings };
-      closeSettingsModal();
     }
     settingsBtn.addEventListener("click", openSettingsModal);
     settingsClose.addEventListener("click", closeSettingsModal);

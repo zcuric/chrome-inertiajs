@@ -315,6 +315,26 @@ function initializePanel() {
         settingsModal.classList.remove('show');
     }
 
+    function showSettingsSavedFeedback() {
+        // Create or update feedback element
+        let feedback = document.getElementById('settings-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.id = 'settings-feedback';
+            feedback.className = 'settings-feedback';
+            feedback.textContent = 'Settings saved!';
+            document.body.appendChild(feedback);
+        }
+
+        // Show feedback
+        feedback.classList.add('show');
+
+        // Hide after 2 seconds
+        setTimeout(() => {
+            feedback.classList.remove('show');
+        }, 2000);
+    }
+
     function saveSettings() {
         const newSettings = {
             theme: document.getElementById('modal-theme').value,
@@ -328,15 +348,15 @@ function initializePanel() {
             expandIconType: document.querySelector('input[name="expandIconType"]:checked')?.value || 'square'
         };
 
-        // Save to chrome storage
+        // Save to chrome storage (this will trigger the onChanged listener which will apply settings)
         chrome.storage.sync.set(newSettings, () => {
             console.log('Settings saved');
+
+            // Show brief feedback
+            showSettingsSavedFeedback();
         });
 
-        // Update local settings
-        userSettings = { ...userSettings, ...newSettings };
-
-        closeSettingsModal();
+        // Don't close modal - let user continue making changes
     }
 
     // Event listeners for modal
