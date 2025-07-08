@@ -66,9 +66,10 @@ html, body {
     height: 100vh;
 }
 
-#json {
-    width: 100vw;
-    height: 100vh;
+#json-viewer-container {
+    width: 100%;
+    height: calc(100vh - 41px - 40px); // Account for tabs and send button
+    overflow: auto;
 }
 
 #send {
@@ -105,7 +106,7 @@ html, body {
     // Routes toolbar inherits from base .toolbar
 }
 
-#route-search, #props-search {
+#route-search {
     width: 100%;
     padding: 8px;
     background-color: var(--background-tertiary);
@@ -172,33 +173,14 @@ html, body {
 .route-method-head { background-color: #6c757d; }
 .route-method-options { background-color: #17a2b8; }
 
-// Search highlighting for ACE editor
-.ace_search_highlight {
-    background-color: #ffff00 !important;
-    color: #000000 !important;
-    border-radius: 2px;
-    position: relative;
-    z-index: 2;
-}
+// Json viewer integration styles
+#json-viewer-container {
+    // Let json-viewer handle its own styling
+    // Override any conflicting styles if needed
 
-body.theme-dark .ace_search_highlight {
-    background-color: #ffd700 !important;
-    color: #000000 !important;
-}
-
-// Alternative class names for better compatibility
-.ace_search-highlight,
-.search-highlight,
-.ace_selected {
-    background-color: #ffff00 !important;
-    color: #000000 !important;
-    border-radius: 2px;
-}
-
-body.theme-dark .ace_search-highlight,
-body.theme-dark .search-highlight,
-body.theme-dark .ace_selected {
-    background-color: #ffd700 !important;
-    color: #000000 !important;
+    .json-viewer {
+        font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 13px;
+    }
 }
 

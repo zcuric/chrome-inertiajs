@@ -1,59 +1,83 @@
-import ace from 'ace-builds'
-import jsonWorkerUrl from "ace-builds/src-noconflict/worker-json";
-import "ace-builds/src-noconflict/mode-json";
-import "ace-builds/src-noconflict/ext-searchbox";
-
-// Import all themes
-import 'ace-builds/src-noconflict/theme-ambiance';
-import 'ace-builds/src-noconflict/theme-chaos';
-import 'ace-builds/src-noconflict/theme-clouds_midnight';
-import 'ace-builds/src-noconflict/theme-dracula';
-import 'ace-builds/src-noconflict/theme-gob';
-import 'ace-builds/src-noconflict/theme-gruvbox';
-import 'ace-builds/src-noconflict/theme-idle_fingers';
-import 'ace-builds/src-noconflict/theme-kr_theme';
-import 'ace-builds/src-noconflict/theme-merbivore';
-import 'ace-builds/src-noconflict/theme-merbivore_soft';
-import 'ace-builds/src-noconflict/theme-mono_industrial';
-import 'ace-builds/src-noconflict/theme-monokai';
-import 'ace-builds/src-noconflict/theme-nord_dark';
-import 'ace-builds/src-noconflict/theme-pastel_on_dark';
-import 'ace-builds/src-noconflict/theme-solarized_dark';
-import 'ace-builds/src-noconflict/theme-terminal';
-import 'ace-builds/src-noconflict/theme-tomorrow_night';
-import 'ace-builds/src-noconflict/theme-tomorrow_night_blue';
-import 'ace-builds/src-noconflict/theme-tomorrow_night_bright';
-import 'ace-builds/src-noconflict/theme-tomorrow_night_eighties';
-import 'ace-builds/src-noconflict/theme-twilight';
-import 'ace-builds/src-noconflict/theme-vibrant_ink';
-import 'ace-builds/src-noconflict/theme-chrome';
-import 'ace-builds/src-noconflict/theme-clouds';
-import 'ace-builds/src-noconflict/theme-crimson_editor';
-import 'ace-builds/src-noconflict/theme-dawn';
-import 'ace-builds/src-noconflict/theme-dreamweaver';
-import 'ace-builds/src-noconflict/theme-eclipse';
-import 'ace-builds/src-noconflict/theme-github';
-import 'ace-builds/src-noconflict/theme-iplastic';
-import 'ace-builds/src-noconflict/theme-solarized_light';
-import 'ace-builds/src-noconflict/theme-sqlserver';
-import 'ace-builds/src-noconflict/theme-textmate';
-import 'ace-builds/src-noconflict/theme-tomorrow';
-import 'ace-builds/src-noconflict/theme-xcode';
+import '@andypf/json-viewer'
 
 // --- Main Function ---
 function initializePanel() {
-    // --- ACE Editor Setup ---
-    const jsonContainer = document.querySelector('#json');
-    ace.config.setModuleUrl("ace/mode/json_worker", jsonWorkerUrl);
-    const editor = ace.edit(jsonContainer);
-    editor.getSession().setMode("ace/mode/json");
+    let inertiaPage = {};
+    let jsonViewer = null;
+    let userSettings = { defaultOpenDepth: 2, theme: 'dracula' };
+
+        // Theme mapping from extension themes to json-viewer themes
+    const themeMapping = {
+        // Dark themes
+        'dracula': 'dracula',
+        'monokai': 'monokai',
+        'ambiance': 'tomorrow-night',
+        'chaos': 'default-dark',
+        'clouds_midnight': 'default-dark',
+        'gob': 'default-dark',
+        'gruvbox': 'gruvbox-dark',
+        'idle_fingers': 'default-dark',
+        'kr_theme': 'default-dark',
+        'merbivore': 'default-dark',
+        'merbivore_soft': 'default-dark',
+        'mono_industrial': 'default-dark',
+        'nord_dark': 'nord',
+        'pastel_on_dark': 'default-dark',
+        'solarized_dark': 'solarized-dark',
+        'terminal': 'default-dark',
+        'tomorrow_night': 'tomorrow-night',
+        'tomorrow_night_blue': 'tomorrow-night-blue',
+        'tomorrow_night_bright': 'tomorrow-night-bright',
+        'tomorrow_night_eighties': 'tomorrow-night-eighties',
+        'twilight': 'twilight',
+        'vibrant_ink': 'default-dark',
+
+        // Light themes
+        'chrome': 'default-light',
+        'clouds': 'default-light',
+        'crimson_editor': 'default-light',
+        'dawn': 'default-light',
+        'dreamweaver': 'default-light',
+        'eclipse': 'default-light',
+        'github': 'github-light',
+        'iplastic': 'default-light',
+        'solarized_light': 'solarized-light',
+        'sqlserver': 'default-light',
+        'textmate': 'default-light',
+        'tomorrow': 'tomorrow',
+        'xcode': 'xcode'
+    };
+
+        // Initialize json-viewer
+    const initializeJsonViewer = () => {
+        const container = document.querySelector('#json-viewer-container');
+        if (!container) return;
+
+        // Clear existing viewer
+        container.innerHTML = '';
+
+        const viewerTheme = themeMapping[userSettings.theme] || 'default-dark';
+
+        // Create the json-viewer web component
+        jsonViewer = document.createElement('andypf-json-viewer');
+        jsonViewer.setAttribute('theme', viewerTheme);
+        jsonViewer.setAttribute('expanded', userSettings.defaultOpenDepth.toString());
+        jsonViewer.setAttribute('show-toolbar', 'true');
+        jsonViewer.setAttribute('show-data-types', 'true');
+        jsonViewer.setAttribute('show-copy', 'true');
+        jsonViewer.setAttribute('show-size', 'true');
+        jsonViewer.setAttribute('expand-icon-type', 'square');
+        jsonViewer.setAttribute('indent', '2');
+
+        // Set initial data
+        jsonViewer.data = { message: 'Refresh your page to see Inertia.js page json' };
+
+        container.appendChild(jsonViewer);
+    };
 
     // --- Load Settings and Apply Theme ---
-    let userSettings = { defaultOpenDepth: 2, theme: 'dracula' };
     chrome.storage.sync.get({ defaultOpenDepth: 2, theme: 'dracula' }, (items) => {
         userSettings = items;
-        editor.getSession().foldToLevel(items.defaultOpenDepth);
-        editor.setTheme(`ace/theme/${items.theme}`);
 
         const darkThemes = [
             'ambiance', 'chaos', 'clouds_midnight', 'dracula', 'gob',
@@ -70,9 +94,10 @@ function initializePanel() {
             document.body.classList.add('theme-light');
             document.body.classList.remove('theme-dark');
         }
-    });
 
-    let inertiaPage = {};
+        // Initialize viewer after settings are loaded
+        initializeJsonViewer();
+    });
 
     const mergePage = (nextPage, isPartial = false) => {
         if (typeof nextPage !== 'object' || nextPage === null || !nextPage.component) {
@@ -84,99 +109,24 @@ function initializePanel() {
         return inertiaPage = nextPage;
     }
 
-    // --- Props Search & Highlight Setup ---
-    const propsSearchInput = document.querySelector('#props-search');
-    const propsSearchCount = document.querySelector('#props-search-count');
-    let lastSearchTerm = '';
-    let searchMarkers = [];
-
-        const clearSearchHighlights = () => {
-        searchMarkers.forEach(marker => editor.getSession().removeMarker(marker));
-        searchMarkers = [];
-    };
-
-        const highlightSearchMatches = (term) => {
-        clearSearchHighlights();
-
-        if (!term) {
-            propsSearchCount.textContent = '';
-            return;
-        }
-
-        try {
-            const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(safeTerm, 'gi');
-            const content = editor.getValue();
-            const lines = content.split('\n');
-            let matches = 0;
-
-            lines.forEach((line, lineIndex) => {
-                let match;
-                regex.lastIndex = 0;
-                while ((match = regex.exec(line)) !== null) {
-                    matches++;
-                    const Range = ace.require('ace/range').Range;
-                    const range = new Range(lineIndex, match.index, lineIndex, match.index + match[0].length);
-                    const markerId = editor.getSession().addMarker(range, 'search-highlight', 'text', false);
-                    searchMarkers.push(markerId);
-
-                    if (match[0].length === 0) {
-                        regex.lastIndex = match.index + 1;
-                    }
-                }
-            });
-
-            if (matches > 0) {
-                propsSearchCount.textContent = `${matches} match${matches > 1 ? 'es' : ''}`;
-            } else {
-                propsSearchCount.textContent = 'No matches';
-            }
-        } catch (err) {
-            console.error('Search highlighting error:', err);
-            propsSearchCount.textContent = '';
-        }
-    };
-
-
-
-    const reapplySearch = () => {
-        if (lastSearchTerm) {
-            clearSearchHighlights();
-            highlightSearchMatches(lastSearchTerm);
-        }
-    };
-
-    let renderJson = (page, isPartial = false) => {
+        let renderJson = (page, isPartial = false) => {
         const newPage = mergePage(page, isPartial);
         if (typeof newPage !== 'object' || newPage === null) return;
-        const value = JSON.stringify(newPage, null, '\t');
-        if (editor.getValue() !== value) {
-            editor.setValue(value, -1);
-        } else {
-            // Force Ace to re-render/fold if value is the same
-            editor.setValue('', -1);
-            editor.setValue(value, -1);
+
+        if (jsonViewer) {
+            jsonViewer.data = newPage;
+            jsonViewer.setAttribute('expanded', userSettings.defaultOpenDepth.toString());
         }
 
-        // Use the user's preferred fold depth
-        editor.getSession().foldToLevel(userSettings.defaultOpenDepth);
         handleZiggy(newPage);
-
-        // Reapply search highlighting after content changes with a small delay
-        setTimeout(() => {
-            reapplySearch();
-        }, 100);
     }
 
     const sendJson = () => {
-        chrome.devtools.inspectedWindow.eval(`dispatchEvent(new PopStateEvent("popstate", {state: ${editor.getValue()}}))`);
+        if (jsonViewer && jsonViewer.data) {
+            const jsonString = JSON.stringify(jsonViewer.data);
+            chrome.devtools.inspectedWindow.eval(`dispatchEvent(new PopStateEvent("popstate", {state: ${jsonString}}))`);
+        }
     }
-
-    editor.commands.addCommand({
-        name: "Send",
-        exec: sendJson,
-        bindKey: { mac: "cmd-return", win: "ctrl-return" }
-    });
 
     document.querySelector('#send').addEventListener('click', sendJson);
 
@@ -188,7 +138,7 @@ function initializePanel() {
 
     chrome.tabs.sendMessage(chrome.devtools.inspectedWindow.tabId, { type: 'GET_INERTIA_PAGE' }, page => {
         if (page) renderJson(page);
-        else editor.setValue(`/* This page doesn’t seem to be using Inertia.js */`);
+        else if (jsonViewer) jsonViewer.data = { message: "This page doesn't seem to be using Inertia.js" };
     });
 
     chrome.devtools.network.onRequestFinished.addListener(request => {
@@ -212,21 +162,18 @@ function initializePanel() {
     const routeSearchInput = document.querySelector('#route-search');
     let allRoutes = [];
 
-        // Set up search input event listener
-    propsSearchInput.addEventListener('input', function(e) {
-        const term = e.target.value;
-        lastSearchTerm = term;
-        clearSearchHighlights();
-        highlightSearchMatches(term);
-    });
-
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             tabButtons.forEach(btn => btn.classList.remove('active'));
             tabContents.forEach(content => content.classList.remove('active'));
             button.classList.add('active');
             document.getElementById(button.dataset.tab).classList.add('active');
-            if (button.dataset.tab === 'props') editor.resize();
+
+            // Re-render json viewer when switching to props tab
+            if (button.dataset.tab === 'props' && jsonViewer) {
+                // The json-viewer automatically handles re-rendering
+                // No manual refresh needed
+            }
         });
     });
 
