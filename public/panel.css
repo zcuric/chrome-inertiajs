@@ -91,7 +91,7 @@ html, body {
   outline: 0;
 }
 
-#routes .toolbar {
+.toolbar {
   padding: 8px;
   background-color: var(--background-secondary);
   border-bottom: 1px solid var(--border-color);
@@ -100,7 +100,7 @@ html, body {
   z-index: 1;
 }
 
-#route-search {
+#route-search, #props-search {
   width: 100%;
   padding: 8px;
   background-color: var(--background-tertiary);
@@ -186,6 +186,17 @@ html, body {
 
 .route-method-options {
   background-color: #17a2b8;
+}
+
+.ace_search_highlight {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border-radius: 2px;
+}
+
+body.theme-dark .ace_search_highlight {
+  background-color: #ffd700 !important;
+  color: #000000 !important;
 }
 
 /*# sourceMappingURL=panel.css.map */

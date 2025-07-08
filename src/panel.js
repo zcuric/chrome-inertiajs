@@ -1,6 +1,7 @@
 import ace from 'ace-builds'
 import jsonWorkerUrl from "ace-builds/src-noconflict/worker-json";
 import "ace-builds/src-noconflict/mode-json";
+import "ace-builds/src-noconflict/ext-searchbox";
 
 // Import all themes
 import 'ace-builds/src-noconflict/theme-ambiance';
@@ -69,7 +70,7 @@ function initializePanel() {
         }
     });
 
-    let inertiaPage = {};
+        let inertiaPage = {};
 
     const mergePage = (nextPage, isPartial = false) => {
         if (typeof nextPage !== 'object' || nextPage === null || !nextPage.component) {
@@ -81,13 +82,82 @@ function initializePanel() {
         return inertiaPage = nextPage;
     }
 
-    const renderJson = (page, isPartial = false) => {
+    // --- Props Search & Highlight Setup ---
+    const propsSearchInput = document.querySelector('#props-search');
+    const propsSearchCount = document.querySelector('#props-search-count');
+    let lastSearchTerm = '';
+    let searchMarkers = [];
+
+    const clearSearchHighlights = () => {
+        searchMarkers.forEach(marker => editor.getSession().removeMarker(marker));
+        searchMarkers = [];
+    };
+
+    const highlightSearchMatches = (term) => {
+        if (!term) {
+            clearSearchHighlights();
+            propsSearchCount.textContent = '';
+            return;
+        }
+
+        try {
+            const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(safeTerm, 'gi');
+            const content = editor.getValue();
+            const lines = content.split('\n');
+            let matches = 0;
+
+            lines.forEach((line, lineIndex) => {
+                let match;
+                while ((match = regex.exec(line)) !== null) {
+                    matches++;
+                    const Range = ace.require('ace/range').Range;
+                    const range = new Range(lineIndex, match.index, lineIndex, match.index + match[0].length);
+                    const markerId = editor.getSession().addMarker(range, 'ace_search_highlight', 'text');
+                    searchMarkers.push(markerId);
+
+                    // Reset regex lastIndex to find overlapping matches
+                    if (match[0].length === 0) {
+                        regex.lastIndex = match.index + 1;
+                    }
+                }
+                // Reset regex for next line
+                regex.lastIndex = 0;
+            });
+
+            if (matches > 0) {
+                propsSearchCount.textContent = `${matches} match${matches > 1 ? 'es' : ''}`;
+            } else {
+                propsSearchCount.textContent = 'No matches';
+            }
+        } catch (err) {
+            propsSearchCount.textContent = '';
+        }
+    };
+
+    const reapplySearch = () => {
+        if (lastSearchTerm) {
+            clearSearchHighlights();
+            highlightSearchMatches(lastSearchTerm);
+        }
+    };
+
+    let renderJson = (page, isPartial = false) => {
         const newPage = mergePage(page, isPartial);
         if (typeof newPage !== 'object' || newPage === null) return;
         const value = JSON.stringify(newPage, null, '\t');
-        editor.setValue(value, -1);
+        if (editor.getValue() !== value) {
+            editor.setValue(value, -1);
+        } else {
+            // Force Ace to re-render/fold if value is the same
+            editor.setValue('', -1);
+            editor.setValue(value, -1);
+        }
         editor.getSession().foldAll(1); // Fold all JSON by default
         handleZiggy(newPage);
+
+        // Reapply search highlighting after content changes
+        setTimeout(() => reapplySearch(), 0);
     }
 
     const sendJson = () => {
@@ -133,6 +203,14 @@ function initializePanel() {
     const routeListContainer = document.querySelector('#route-list');
     const routeSearchInput = document.querySelector('#route-search');
     let allRoutes = [];
+
+        // Set up search input event listener
+    propsSearchInput.addEventListener('input', function(e) {
+        const term = e.target.value;
+        lastSearchTerm = term;
+        clearSearchHighlights();
+        highlightSearchMatches(term);
+    });
 
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
