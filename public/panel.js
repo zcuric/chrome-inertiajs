@@ -26085,7 +26085,9 @@
     import_ace_builds.default.config.setModuleUrl("ace/mode/json_worker", import_worker_json.default);
     const editor = import_ace_builds.default.edit(jsonContainer);
     editor.getSession().setMode("ace/mode/json");
+    let userSettings = { defaultOpenDepth: 2, theme: "dracula" };
     chrome.storage.sync.get({ defaultOpenDepth: 2, theme: "dracula" }, (items) => {
+      userSettings = items;
       editor.getSession().foldToLevel(items.defaultOpenDepth);
       editor.setTheme(`ace/theme/${items.theme}`);
       const darkThemes = [
@@ -26139,8 +26141,8 @@
       searchMarkers = [];
     };
     const highlightSearchMatches = (term) => {
+      clearSearchHighlights();
       if (!term) {
-        clearSearchHighlights();
         propsSearchCount.textContent = "";
         return;
       }
@@ -26152,17 +26154,17 @@
         let matches = 0;
         lines.forEach((line, lineIndex) => {
           let match;
+          regex.lastIndex = 0;
           while ((match = regex.exec(line)) !== null) {
             matches++;
             const Range = import_ace_builds.default.require("ace/range").Range;
             const range = new Range(lineIndex, match.index, lineIndex, match.index + match[0].length);
-            const markerId = editor.getSession().addMarker(range, "ace_search_highlight", "text");
+            const markerId = editor.getSession().addMarker(range, "search-highlight", "text", false);
             searchMarkers.push(markerId);
             if (match[0].length === 0) {
               regex.lastIndex = match.index + 1;
             }
           }
-          regex.lastIndex = 0;
         });
         if (matches > 0) {
           propsSearchCount.textContent = `${matches} match${matches > 1 ? "es" : ""}`;
@@ -26170,6 +26172,7 @@
           propsSearchCount.textContent = "No matches";
         }
       } catch (err) {
+        console.error("Search highlighting error:", err);
         propsSearchCount.textContent = "";
       }
     };
@@ -26189,9 +26192,11 @@
         editor.setValue("", -1);
         editor.setValue(value, -1);
       }
-      editor.getSession().foldAll(1);
+      editor.getSession().foldToLevel(userSettings.defaultOpenDepth);
       handleZiggy(newPage);
-      setTimeout(() => reapplySearch(), 0);
+      setTimeout(() => {
+        reapplySearch();
+      }, 100);
     };
     const sendJson = () => {
       chrome.devtools.inspectedWindow.eval(`dispatchEvent(new PopStateEvent("popstate", {state: ${editor.getValue()}}))`);

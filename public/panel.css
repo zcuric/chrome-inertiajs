@@ -192,9 +192,26 @@ html, body {
   background-color: #ffff00 !important;
   color: #000000 !important;
   border-radius: 2px;
+  position: relative;
+  z-index: 2;
 }
 
 body.theme-dark .ace_search_highlight {
+  background-color: #ffd700 !important;
+  color: #000000 !important;
+}
+
+.ace_search-highlight,
+.search-highlight,
+.ace_selected {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border-radius: 2px;
+}
+
+body.theme-dark .ace_search-highlight,
+body.theme-dark .search-highlight,
+body.theme-dark .ace_selected {
   background-color: #ffd700 !important;
   color: #000000 !important;
 }

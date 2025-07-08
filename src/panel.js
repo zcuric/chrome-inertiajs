@@ -49,7 +49,9 @@ function initializePanel() {
     editor.getSession().setMode("ace/mode/json");
 
     // --- Load Settings and Apply Theme ---
+    let userSettings = { defaultOpenDepth: 2, theme: 'dracula' };
     chrome.storage.sync.get({ defaultOpenDepth: 2, theme: 'dracula' }, (items) => {
+        userSettings = items;
         editor.getSession().foldToLevel(items.defaultOpenDepth);
         editor.setTheme(`ace/theme/${items.theme}`);
 
@@ -70,7 +72,7 @@ function initializePanel() {
         }
     });
 
-        let inertiaPage = {};
+    let inertiaPage = {};
 
     const mergePage = (nextPage, isPartial = false) => {
         if (typeof nextPage !== 'object' || nextPage === null || !nextPage.component) {
@@ -88,14 +90,15 @@ function initializePanel() {
     let lastSearchTerm = '';
     let searchMarkers = [];
 
-    const clearSearchHighlights = () => {
+        const clearSearchHighlights = () => {
         searchMarkers.forEach(marker => editor.getSession().removeMarker(marker));
         searchMarkers = [];
     };
 
-    const highlightSearchMatches = (term) => {
+        const highlightSearchMatches = (term) => {
+        clearSearchHighlights();
+
         if (!term) {
-            clearSearchHighlights();
             propsSearchCount.textContent = '';
             return;
         }
@@ -109,20 +112,18 @@ function initializePanel() {
 
             lines.forEach((line, lineIndex) => {
                 let match;
+                regex.lastIndex = 0;
                 while ((match = regex.exec(line)) !== null) {
                     matches++;
                     const Range = ace.require('ace/range').Range;
                     const range = new Range(lineIndex, match.index, lineIndex, match.index + match[0].length);
-                    const markerId = editor.getSession().addMarker(range, 'ace_search_highlight', 'text');
+                    const markerId = editor.getSession().addMarker(range, 'search-highlight', 'text', false);
                     searchMarkers.push(markerId);
 
-                    // Reset regex lastIndex to find overlapping matches
                     if (match[0].length === 0) {
                         regex.lastIndex = match.index + 1;
                     }
                 }
-                // Reset regex for next line
-                regex.lastIndex = 0;
             });
 
             if (matches > 0) {
@@ -131,9 +132,12 @@ function initializePanel() {
                 propsSearchCount.textContent = 'No matches';
             }
         } catch (err) {
+            console.error('Search highlighting error:', err);
             propsSearchCount.textContent = '';
         }
     };
+
+
 
     const reapplySearch = () => {
         if (lastSearchTerm) {
@@ -153,11 +157,15 @@ function initializePanel() {
             editor.setValue('', -1);
             editor.setValue(value, -1);
         }
-        editor.getSession().foldAll(1); // Fold all JSON by default
+
+        // Use the user's preferred fold depth
+        editor.getSession().foldToLevel(userSettings.defaultOpenDepth);
         handleZiggy(newPage);
 
-        // Reapply search highlighting after content changes
-        setTimeout(() => reapplySearch(), 0);
+        // Reapply search highlighting after content changes with a small delay
+        setTimeout(() => {
+            reapplySearch();
+        }, 100);
     }
 
     const sendJson = () => {
