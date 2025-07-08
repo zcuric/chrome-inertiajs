@@ -361,7 +361,7 @@
       "dawn": "default-light",
       "dreamweaver": "default-light",
       "eclipse": "default-light",
-      "github": "github-light",
+      "github": "github",
       "iplastic": "default-light",
       "solarized_light": "solarized-light",
       "sqlserver": "default-light",
@@ -384,11 +384,27 @@
       jsonViewer.setAttribute("expand-icon-type", userSettings.expandIconType);
       jsonViewer.setAttribute("indent", userSettings.indent.toString());
       jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
-      jsonViewer.data = { message: "Refresh your page to see Inertia.js page json" };
       container.appendChild(jsonViewer);
+      setTimeout(() => {
+        if (jsonViewer) {
+          jsonViewer.data = { message: "Refresh your page to see Inertia.js page json" };
+        }
+      }, 100);
     };
-    chrome.storage.sync.get(userSettings, (items) => {
-      userSettings = items;
+    const updateJsonViewerSettings = () => {
+      if (!jsonViewer) return;
+      const viewerTheme = themeMapping[userSettings.theme] || "default-dark";
+      jsonViewer.setAttribute("theme", viewerTheme);
+      jsonViewer.setAttribute("expanded", userSettings.defaultOpenDepth.toString());
+      jsonViewer.setAttribute("show-toolbar", userSettings.showToolbar.toString());
+      jsonViewer.setAttribute("show-data-types", userSettings.showDataTypes.toString());
+      jsonViewer.setAttribute("show-copy", userSettings.showCopy.toString());
+      jsonViewer.setAttribute("show-size", userSettings.showSize.toString());
+      jsonViewer.setAttribute("expand-icon-type", userSettings.expandIconType);
+      jsonViewer.setAttribute("indent", userSettings.indent.toString());
+      jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
+    };
+    const updateBodyTheme = (theme) => {
       const darkThemes = [
         "ambiance",
         "chaos",
@@ -413,14 +429,35 @@
         "twilight",
         "vibrant_ink"
       ];
-      if (darkThemes.includes(items.theme)) {
+      if (darkThemes.includes(theme)) {
         document.body.classList.add("theme-dark");
         document.body.classList.remove("theme-light");
       } else {
         document.body.classList.add("theme-light");
         document.body.classList.remove("theme-dark");
       }
+    };
+    chrome.storage.sync.get(userSettings, (items) => {
+      userSettings = items;
+      updateBodyTheme(items.theme);
       initializeJsonViewer();
+    });
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === "sync") {
+        let settingsChanged = false;
+        for (let key in changes) {
+          if (userSettings.hasOwnProperty(key)) {
+            userSettings[key] = changes[key].newValue;
+            settingsChanged = true;
+          }
+        }
+        if (settingsChanged) {
+          if (changes.theme) {
+            updateBodyTheme(changes.theme.newValue);
+          }
+          updateJsonViewerSettings();
+        }
+      }
     });
     const mergePage = (nextPage, isPartial = false) => {
       if (typeof nextPage !== "object" || nextPage === null || !nextPage.component) {
@@ -435,9 +472,13 @@
       const newPage = mergePage(page, isPartial);
       if (typeof newPage !== "object" || newPage === null) return;
       if (jsonViewer) {
-        jsonViewer.data = newPage;
-        jsonViewer.setAttribute("expanded", userSettings.defaultOpenDepth.toString());
-        jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
+        setTimeout(() => {
+          if (jsonViewer) {
+            jsonViewer.data = newPage;
+            jsonViewer.setAttribute("expanded", userSettings.defaultOpenDepth.toString());
+            jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
+          }
+        }, 50);
       }
       handleZiggy(newPage);
     };
@@ -453,8 +494,15 @@
       if (message.type === "INERTIA_SUCCESS") renderJson(message.page);
     });
     chrome.tabs.sendMessage(chrome.devtools.inspectedWindow.tabId, { type: "GET_INERTIA_PAGE" }, (page) => {
-      if (page) renderJson(page);
-      else if (jsonViewer) jsonViewer.data = { message: "This page doesn't seem to be using Inertia.js" };
+      if (page) {
+        renderJson(page);
+      } else {
+        setTimeout(() => {
+          if (jsonViewer) {
+            jsonViewer.data = { message: "This page doesn't seem to be using Inertia.js" };
+          }
+        }, 100);
+      }
     });
     chrome.devtools.network.onRequestFinished.addListener((request) => {
       if (request.response.status === 200 && request.response.headers.find((h) => h.name.toLowerCase() === "x-inertia")) {

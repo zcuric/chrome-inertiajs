@@ -54,7 +54,7 @@ function initializePanel() {
         'dawn': 'default-light',
         'dreamweaver': 'default-light',
         'eclipse': 'default-light',
-        'github': 'github-light',
+        'github': 'github',
         'iplastic': 'default-light',
         'solarized_light': 'solarized-light',
         'sqlserver': 'default-light',
@@ -63,7 +63,7 @@ function initializePanel() {
         'xcode': 'xcode'
     };
 
-            // Initialize json-viewer
+                // Initialize json-viewer
     const initializeJsonViewer = () => {
         const container = document.querySelector('#json-viewer-container');
         if (!container) return;
@@ -87,16 +87,35 @@ function initializePanel() {
         // Apply font size styling
         jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
 
-        // Set initial data
-        jsonViewer.data = { message: 'Refresh your page to see Inertia.js page json' };
-
         container.appendChild(jsonViewer);
+
+        // Wait for the component to be ready before setting data
+        setTimeout(() => {
+            if (jsonViewer) {
+                jsonViewer.data = { message: 'Refresh your page to see Inertia.js page json' };
+            }
+        }, 100);
     };
 
-        // --- Load Settings and Apply Theme ---
-    chrome.storage.sync.get(userSettings, (items) => {
-        userSettings = items;
+    // Update json-viewer settings without recreating it
+    const updateJsonViewerSettings = () => {
+        if (!jsonViewer) return;
 
+        const viewerTheme = themeMapping[userSettings.theme] || 'default-dark';
+
+        jsonViewer.setAttribute('theme', viewerTheme);
+        jsonViewer.setAttribute('expanded', userSettings.defaultOpenDepth.toString());
+        jsonViewer.setAttribute('show-toolbar', userSettings.showToolbar.toString());
+        jsonViewer.setAttribute('show-data-types', userSettings.showDataTypes.toString());
+        jsonViewer.setAttribute('show-copy', userSettings.showCopy.toString());
+        jsonViewer.setAttribute('show-size', userSettings.showSize.toString());
+        jsonViewer.setAttribute('expand-icon-type', userSettings.expandIconType);
+        jsonViewer.setAttribute('indent', userSettings.indent.toString());
+        jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
+    };
+
+            // Update body theme classes
+    const updateBodyTheme = (theme) => {
         const darkThemes = [
             'ambiance', 'chaos', 'clouds_midnight', 'dracula', 'gob',
             'gruvbox', 'idle_fingers', 'kr_theme', 'merbivore', 'merbivore_soft',
@@ -105,16 +124,45 @@ function initializePanel() {
             'tomorrow_night_bright', 'tomorrow_night_eighties', 'twilight', 'vibrant_ink'
         ];
 
-        if (darkThemes.includes(items.theme)) {
+        if (darkThemes.includes(theme)) {
             document.body.classList.add('theme-dark');
             document.body.classList.remove('theme-light');
         } else {
             document.body.classList.add('theme-light');
             document.body.classList.remove('theme-dark');
         }
+    };
 
-        // Initialize viewer after settings are loaded
+    // --- Load Settings and Apply Theme ---
+    chrome.storage.sync.get(userSettings, (items) => {
+        userSettings = items;
+        updateBodyTheme(items.theme);
         initializeJsonViewer();
+    });
+
+    // --- Listen for Settings Changes ---
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === 'sync') {
+            let settingsChanged = false;
+
+            // Update userSettings with any changes
+            for (let key in changes) {
+                if (userSettings.hasOwnProperty(key)) {
+                    userSettings[key] = changes[key].newValue;
+                    settingsChanged = true;
+                }
+            }
+
+            if (settingsChanged) {
+                // Update body theme if theme changed
+                if (changes.theme) {
+                    updateBodyTheme(changes.theme.newValue);
+                }
+
+                // Update json-viewer settings
+                updateJsonViewerSettings();
+            }
+        }
     });
 
     const mergePage = (nextPage, isPartial = false) => {
@@ -127,15 +175,19 @@ function initializePanel() {
         return inertiaPage = nextPage;
     }
 
-            let renderJson = (page, isPartial = false) => {
+                let renderJson = (page, isPartial = false) => {
         const newPage = mergePage(page, isPartial);
         if (typeof newPage !== 'object' || newPage === null) return;
 
         if (jsonViewer) {
-            jsonViewer.data = newPage;
-            jsonViewer.setAttribute('expanded', userSettings.defaultOpenDepth.toString());
-            // Ensure font size is maintained
-            jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
+            // Ensure the viewer is ready and set data properly
+            setTimeout(() => {
+                if (jsonViewer) {
+                    jsonViewer.data = newPage;
+                    jsonViewer.setAttribute('expanded', userSettings.defaultOpenDepth.toString());
+                    jsonViewer.style.fontSize = `${userSettings.fontSize}px`;
+                }
+            }, 50);
         }
 
         handleZiggy(newPage);
@@ -157,8 +209,16 @@ function initializePanel() {
     });
 
     chrome.tabs.sendMessage(chrome.devtools.inspectedWindow.tabId, { type: 'GET_INERTIA_PAGE' }, page => {
-        if (page) renderJson(page);
-        else if (jsonViewer) jsonViewer.data = { message: "This page doesn't seem to be using Inertia.js" };
+        if (page) {
+            renderJson(page);
+        } else {
+            // Set fallback message with proper timing
+            setTimeout(() => {
+                if (jsonViewer) {
+                    jsonViewer.data = { message: "This page doesn't seem to be using Inertia.js" };
+                }
+            }, 100);
+        }
     });
 
     chrome.devtools.network.onRequestFinished.addListener(request => {
