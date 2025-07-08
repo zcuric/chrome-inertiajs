@@ -33,7 +33,6 @@ html, body {
     display: flex;
     background-color: var(--background-secondary);
     border-bottom: 1px solid var(--border-color);
-    justify-content: space-between;
     align-items: center;
 }
 
@@ -41,6 +40,7 @@ html, body {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-left: auto;
 }
 
 .tab-button {
